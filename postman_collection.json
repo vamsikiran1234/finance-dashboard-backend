@@ -1,0 +1,243 @@
+{
+  "info": {
+    "name": "Finance Dashboard Backend",
+    "_postman_id": "8f58c9a0-0e7a-4f2a-b0dd-2b7d6e6c8a01",
+    "description": "Import this collection to test all APIs and role scenarios in one place.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "adminRole",
+      "value": "ADMIN"
+    },
+    {
+      "key": "analystRole",
+      "value": "ANALYST"
+    },
+    {
+      "key": "viewerRole",
+      "value": "VIEWER"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"role\": \"VIEWER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"INACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "1", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Records",
+      "item": [
+        {
+          "name": "List Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{viewerRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/records?type=INCOME&category=Salary&startDate=2026-01-01&endDate=2026-12-31&search=salary&limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "records"],
+              "query": [
+                { "key": "type", "value": "INCOME" },
+                { "key": "category", "value": "Salary" },
+                { "key": "startDate", "value": "2026-01-01" },
+                { "key": "endDate", "value": "2026-12-31" },
+                { "key": "search", "value": "salary" },
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1200,\n  \"type\": \"INCOME\",\n  \"category\": \"Salary\",\n  \"date\": \"2026-04-01\",\n  \"notes\": \"April salary\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/records",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "records"]
+            }
+          }
+        },
+        {
+          "name": "Update Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1500,\n  \"notes\": \"Updated amount\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/records/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "records", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "x-role", "value": "{{adminRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/records/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "records", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{analystRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Category Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{analystRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Monthly Trends",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{analystRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/trends",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "trends"]
+            }
+          }
+        },
+        {
+          "name": "Recent Activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-role", "value": "{{analystRole}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard/recent",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard", "recent"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

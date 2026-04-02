@@ -1,0 +1,21 @@
+const ROLES = {
+  VIEWER: "VIEWER",
+  ANALYST: "ANALYST",
+  ADMIN: "ADMIN"
+};
+
+const USER_STATUS = {
+  ACTIVE: "ACTIVE",
+  INACTIVE: "INACTIVE"
+};
+
+const RECORD_TYPES = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE"
+};
+
+module.exports = {
+  ROLES,
+  USER_STATUS,
+  RECORD_TYPES
+};

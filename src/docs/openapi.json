@@ -1,0 +1,381 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Finance Dashboard Backend API",
+    "version": "1.0.0",
+    "description": "Finance dashboard backend with RBAC, records, users, and dashboard summary APIs."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "RoleHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-role"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["success", "message"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "SuccessEnvelope": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {}
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["VIEWER", "ANALYST", "ADMIN"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "INACTIVE"]
+          }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["INCOME", "EXPENSE"]
+          },
+          "category": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "example": "2026-04-01"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_by": {
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "RoleHeader": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy"
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create user",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "role"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string" },
+                  "role": { "type": "string", "enum": ["VIEWER", "ANALYST", "ADMIN"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Missing or invalid role" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "get": {
+        "tags": ["Users"],
+        "summary": "List users",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "responses": {
+          "200": { "description": "Users returned" },
+          "401": { "description": "Missing or invalid role" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/users/{id}/status": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "Update user status",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated" },
+          "400": { "description": "Invalid input" },
+          "404": { "description": "User not found" }
+        }
+      }
+    },
+    "/api/records": {
+      "get": {
+        "tags": ["Records"],
+        "summary": "List and filter records",
+        "security": [
+          {
+            "RoleHeader": ["VIEWER", "ANALYST", "ADMIN"]
+          }
+        ],
+        "parameters": [
+          { "name": "type", "in": "query", "schema": { "type": "string", "enum": ["INCOME", "EXPENSE"] } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          { "name": "startDate", "in": "query", "schema": { "type": "string" } },
+          { "name": "endDate", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Records returned with pagination" },
+          "401": { "description": "Missing or invalid role" },
+          "403": { "description": "Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Records"],
+        "summary": "Create record",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "type", "category", "date"],
+                "properties": {
+                  "amount": { "type": "number" },
+                  "type": { "type": "string", "enum": ["INCOME", "EXPENSE"] },
+                  "category": { "type": "string" },
+                  "date": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Record created" },
+          "400": { "description": "Invalid input" },
+          "401": { "description": "Missing or invalid role" },
+          "403": { "description": "Forbidden" }
+        }
+      }
+    },
+    "/api/records/{id}": {
+      "put": {
+        "tags": ["Records"],
+        "summary": "Update record",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 1,
+                "properties": {
+                  "amount": { "type": "number" },
+                  "type": { "type": "string", "enum": ["INCOME", "EXPENSE"] },
+                  "category": { "type": "string" },
+                  "date": { "type": "string" },
+                  "notes": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Record updated" },
+          "404": { "description": "Record not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Records"],
+        "summary": "Delete record",
+        "security": [
+          {
+            "RoleHeader": ["ADMIN"]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Record deleted" },
+          "404": { "description": "Record not found" }
+        }
+      }
+    },
+    "/api/dashboard/summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get income, expense, and balance summary",
+        "security": [
+          {
+            "RoleHeader": ["ANALYST", "ADMIN"]
+          }
+        ],
+        "responses": {
+          "200": { "description": "Summary returned" }
+        }
+      }
+    },
+    "/api/dashboard/categories": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get category breakdown",
+        "security": [
+          {
+            "RoleHeader": ["ANALYST", "ADMIN"]
+          }
+        ],
+        "responses": {
+          "200": { "description": "Breakdown returned" }
+        }
+      }
+    },
+    "/api/dashboard/trends": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get monthly trends",
+        "security": [
+          {
+            "RoleHeader": ["ANALYST", "ADMIN"]
+          }
+        ],
+        "responses": {
+          "200": { "description": "Trends returned" }
+        }
+      }
+    },
+    "/api/dashboard/recent": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get recent activity",
+        "security": [
+          {
+            "RoleHeader": ["ANALYST", "ADMIN"]
+          }
+        ],
+        "responses": {
+          "200": { "description": "Recent records returned" }
+        }
+      }
+    }
+  }
+}
